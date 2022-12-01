@@ -1,0 +1,63 @@
+import netmiko
+import getpass
+import difflib
+import ipaddress
+
+# adding this code will allow the user to enter username password ans the secret password.
+connectionInfo = {
+    'device_type':'cisco_ios',
+    'host':'192.168.56.101',
+    'username':'',#Username = cisco
+    'password':'',#Password = cicsco123
+    'secret':'',  # Secert Password = Cisco123!
+}
+
+
+#adding the username and password and the secret for when the user log in
+print("*** Device configuration menu***")
+connectionInfo['username'] = input("Device username: ")
+connectionInfo['password'] = getpass.getpass("Device password ")
+connectionInfo['secret']   = getpass.getpass("Device secret")
+choice = input("Connect via SSH configure loopback (1) or (2) configure rip or (3)  configure vlans and switch")
+
+# This will allow the user to pick an option 1 = ssh and option 2 being = telnet including backup
+
+# This running config gets the ssh session and runs it connection.
+
+
+if choice == "1":
+    connectionInfo['device_type'] = "cisco_ios"
+    session = netmiko.ConnectionHandler(**connectionInfo)
+    session.enable()
+
+    loopback_config = session.send_config_set('int loopback 0', 'ip_address 10.10.1.1 255.255.255.255')
+    brief = session.send_command('show ip brief')
+elif choice =="2":
+    connectionInfo['device_type'] = "cisco_ios"
+    session = netmiko.ConnectionHandler(**connectionInfo)
+    session.enable()
+    RIP = session.send_config_set('router rip', 'version 2', 'network 10.10.1.1.')
+elif choice =="3":
+    connectionInfo['device_type'] = "cisco_ios"
+    connectionInfo['ip address'] = '192.168.56.100'
+    session = netmiko.ConnectHandler(**connectionInfo)
+    session.enable()
+    # This part is to configure the switch
+    # The first line creates an Vlan and gives it an ip address
+    session.send_config_set('interface vlan 10','name Vlan10','ip address 192.168.100.10')
+    session.send_config_Set('interface g/02', 'switchport mode access','switchport access vlan 10')
+    # In this part it adds an interface to a Vlan.
+
+# if the user puts an incorrect option then a message will appear saying option unavailable
+else:
+    print("Option unavailable")
+    exit()
+
+#net = ipaddress.ip_network('10.10.1.1/16')
+#with open ('ipout.txt', 'w') as f:
+    #with redirect_stdout(f) :
+        
+            ##x=net[i]
+            #print   ("interface loop", i)
+            #print   ("ip address",x, "", "255.255.255.255")
+            #print   ("ip route isis LAB")
